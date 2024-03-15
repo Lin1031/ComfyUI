@@ -10,9 +10,26 @@
 		<script type="text/javascript" src="./lib/litegraph.core.js"></script>
 		<script type="text/javascript" src="./lib/litegraph.extensions.js" defer></script>
 		<script type="text/javascript">
+			function getParams(url) {
+			  const urlObject = new URL(url);
+			  const params = {};
+			  for (const [key, value] of urlObject.searchParams.entries()) {
+			    params[key] = value;
+			  }
+			  return params;
+			}
+			const params = getParams(location.href);
+
+			if(params.bpmToken) {
+				localStorage.setItem('bpmToken', params.bpmToken)
+			}
 			const token = localStorage.getItem('bpmToken')
 			if(token){
-				console.log('denglu')
+				if(token === '123123')
+				console.log('login success')
+			else{
+				console.log('login timeout')
+			}
 			} else {
 
 			console.log('没有登录')
