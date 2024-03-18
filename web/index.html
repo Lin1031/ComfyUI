@@ -72,6 +72,7 @@
             // defaults.success(xhr.responseText, xhr);
           } else {
             console.log("登录过期", xhr.status);
+            location.href = "https://lbp.lifewit.cn/sso/login"
             // defaults.error(xhr.responseText, xhr);
           }
         });
@@ -106,6 +107,7 @@
       checkIsLogin(token);
     } else {
       console.log("没有登录");
+      location.href = "https://lbp.lifewit.cn/sso/login"
     }
 		</script>
 		<script type="module">
