@@ -10,30 +10,103 @@
 		<script type="text/javascript" src="./lib/litegraph.core.js"></script>
 		<script type="text/javascript" src="./lib/litegraph.extensions.js" defer></script>
 		<script type="text/javascript">
-			function getParams(url) {
-			  const urlObject = new URL(url);
-			  const params = {};
-			  for (const [key, value] of urlObject.searchParams.entries()) {
-			    params[key] = value;
-			  }
-			  return params;
-			}
-			const params = getParams(location.href);
+    console.log("初始化");
+    // 判断是否登录
+    function checkIsLogin(token) {
+      // 设置默认值
+      const defaults = {
+        type: "get",
+        url: "https://lbp.lifewit.cn/api/lbp/v1/api/auth/userDetail",
+        async: true,
+        data: {},
+        header: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        success: function () {},
+        error: function () {},
+      };
+      ajax({}, defaults);
+    }
 
-			if(params.bpmToken) {
-				localStorage.setItem('bpmToken', params.bpmToken)
-			}
-			const token = localStorage.getItem('bpmToken')
-			if(token){
-				if(token === '123123')
-				console.log('login success')
-			else{
-				console.log('login timeout')
-			}
-			} else {
+    // 接口请求
+    function ajax(options, defaults) {
+      let params = "";
+      function dealParams(data) {
+        for (let k in data) {
+          params += k + "&" + data[k];
+        }
+        params = params.trim().lenth > 0 ? params.slice(0, params.length) : "";
+      }
 
-			console.log('没有登录')
-			}
+      // 将传入的值替换默认值
+      Object.assign(defaults, options);
+      // 创建xhr对象
+      const xhr = new XMLHttpRequest();
+      xhr.open(defaults.type, defaults.url, defaults.async);
+      // 1.get请求
+      if (defaults.type.toLocaleLowerCase() == "get") {
+        xhr.setRequestHeader("Authorization", defaults.header["Authorization"]);
+        params = dealParams(defaults.data);
+        if (params) {
+          defaults.url = "?" + params;
+        }
+        defaults.data = null;
+      } else if (defaults.type.toLowerCase() == "post") {
+        // 2.post请求
+        xhr.setRequestHeader("Content-Type", defaults.header["Content-Type"]);
+        const contentType = defaults.header["Content-Type"];
+        if (contentType.includes("application/json")) {
+          defaults.data = JSON.stringify(defaults.data);
+        } else if (contentType.includes("application/x-www-form-urlencoded")) {
+          defaults.data = dealParams(defaults.data);
+        }
+      }
+
+      // 监听load事件，和readystatechange
+      try {
+        xhr.addEventListener("load", () => {
+          console.log(xhr.status);
+          if (xhr.status == 200) {
+            console.log("登录成功");
+            // defaults.success(xhr.responseText, xhr);
+          } else {
+            console.log("登录过期", xhr.status);
+            // defaults.error(xhr.responseText, xhr);
+          }
+        });
+      } catch (err) {
+        defaults.error(err, xhr);
+      }
+
+      xhr.addEventListener("error", () => {
+        defaults.error(xhr);
+      });
+
+      xhr.send(defaults.data);
+    }
+
+    // 获取URL上的参数
+    function getParams(url) {
+      const urlObject = new URL(url);
+      const params = {};
+      for (const [key, value] of urlObject.searchParams.entries()) {
+        params[key] = value;
+      }
+      return params;
+    }
+    // 开始执行登录操作
+    const params = getParams(location.href);
+    if (params.bpmToken) {
+      localStorage.setItem("bpmToken", params.bpmToken);
+    }
+    const token = localStorage.getItem("bpmToken");
+    if (token) {
+      // 登录判断
+      checkIsLogin(token);
+    } else {
+      console.log("没有登录");
+    }
 		</script>
 		<script type="module">
 			import { app } from "./scripts/app.js";
